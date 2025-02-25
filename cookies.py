@@ -55,14 +55,35 @@ try:
 
         globalMul = driver.execute_script("return Game.globalCpsMult")
         
-        amtCursors = driver.execute_script("return Game.Objects.Cursor.amount")
-        print(f"amtCursors: {amtCursors}")
-        
-        cursorStoredTotalCps = driver.execute_script("return Game.Objects.Cursor.storedTotalCps")
-        print(f"Cursor Total CPS: {globalMul * cursorStoredTotalCps}")
+        #amtCursors = driver.execute_script("return Game.Objects.Cursor.amount")
+        #print(f"amtCursors: {amtCursors}")
 
+        #cursorStoredTotalCps = driver.execute_script("return Game.Objects.Cursor.storedTotalCps")
+        #print(f"Cursor Total CPS: {globalMul * cursorStoredTotalCps}")
+
+        #buildings = driver.execute_script("return Game.ObjectsById")
+        
+        maxEfficiency = 0
+        indexOf = 0
+
+        for i in range(20):
+            buildingStoredTotalCps = driver.execute_script("return Game.ObjectsById[" + str(i) + "].storedTotalCps")
+            buildingName = driver.execute_script("return Game.ObjectsById[" + str(i) + "].name")
+            amtBuilding = driver.execute_script("return Game.ObjectsById[" + str(i) + "].amount")
+            price = driver.execute_script("return Game.ObjectsById[" + str(i) + "].price")
+            cpsEach = (globalMul * buildingStoredTotalCps) / amtBuilding
+            efficiency = (cpsEach / price) * (10 ** 10)
+            if (efficiency > maxEfficiency):
+                maxEfficiency = efficiency
+                indexOf = i
+            #print(f"{buildingName} CPS each: {cpsEach}")
+            #print(f"{buildingName} price: {price}")
+            #print(f"{buildingName} efficiency: {efficiency}")
+
+        print(f"Best building: {driver.execute_script("return Game.ObjectsById[" + str(indexOf) + "].name")}")
 
         sleep(60)  # Update every 60 second
+
 
 except Exception as e:
     print("Error:", e)
