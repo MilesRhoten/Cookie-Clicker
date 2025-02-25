@@ -32,23 +32,34 @@ try:
 
     # Extract the number of cookies
     while True:
-        cookies = driver.execute_script("return Game.cookies;")
-        print(f"Cookies: {int(cookies)}")
+        #cookies = driver.execute_script("return Game.cookies;")
+        #print(f"Cookies: {int(cookies)}")
 
         cpsRaw = driver.execute_script("return Game.cookiesPsRaw;")
         print(f"CpsRaw: {int(cpsRaw)}")
 
-        buildingsOwned = driver.execute_script("return Game.BuildingsOwned;")
-        print(f"Total Buildings Owned: {int(buildingsOwned)}")
+        #buildingsOwned = driver.execute_script("return Game.BuildingsOwned;")
+        #print(f"Total Buildings Owned: {int(buildingsOwned)}")
 
-        cookiesPsByType = driver.execute_script("return Game.cookiesPsByType;")
-        print(f"cookiesPsByType: {cookiesPsByType}")
+        #cookiesPsByType = driver.execute_script("return Game.cookiesPsByType;")
+        #print(f"cookiesPsByType: {cookiesPsByType}")
 
-        cookiesMultByType = driver.execute_script("return Game.cookiesMultByType;")
-        print(f"cookiesMultByType: {cookiesMultByType}")
+        #cookiesMultByType = driver.execute_script("return Game.cookiesMultByType;")
+        #print(f"cookiesMultByType: {cookiesMultByType}")
 
-        cursor = cookiesPsByType["Cursor"] * cookiesMultByType["kittens"]
-        print(f"cpsBuildingArray: {cursor}")
+        
+
+        #priceCursor = driver.execute_script("return Game.Objects.Cursor.bulkPrice")
+        #cursorCpsTotal = driver.execute_script("return Game.cookiesPsByType.Cursor")
+        #kittenMul = driver.execute_script("return Game.cookiesMultByType.kittens")
+
+        globalMul = driver.execute_script("return Game.globalCpsMult")
+        
+        amtCursors = driver.execute_script("return Game.Objects.Cursor.amount")
+        print(f"amtCursors: {amtCursors}")
+        
+        cursorStoredTotalCps = driver.execute_script("return Game.Objects.Cursor.storedTotalCps")
+        print(f"Cursor Total CPS: {globalMul * cursorStoredTotalCps}")
 
 
         sleep(60)  # Update every 60 second
