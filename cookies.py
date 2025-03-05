@@ -65,24 +65,64 @@ try:
         
         maxEfficiency = 0
         indexOf = 0
+        isUpgrade = 0
+        maxCps = 0
 
+        # check buildings
         for i in range(20):
             buildingStoredTotalCps = driver.execute_script("return Game.ObjectsById[" + str(i) + "].storedTotalCps")
             buildingName = driver.execute_script("return Game.ObjectsById[" + str(i) + "].name")
             amtBuilding = driver.execute_script("return Game.ObjectsById[" + str(i) + "].amount")
             price = driver.execute_script("return Game.ObjectsById[" + str(i) + "].price")
             cpsEach = (globalMul * buildingStoredTotalCps) / amtBuilding
-            efficiency = (cpsEach / price) * (10 ** 10)
+            efficiency = (cpsEach / price)
             if (efficiency > maxEfficiency):
                 maxEfficiency = efficiency
                 indexOf = i
+                maxCps = cpsEach
             #print(f"{buildingName} CPS each: {cpsEach}")
             #print(f"{buildingName} price: {price}")
             #print(f"{buildingName} efficiency: {efficiency}")
 
+        print(f"Best building efficiency: {maxEfficiency}")
         print(f"Best building: {driver.execute_script("return Game.ObjectsById[" + str(indexOf) + "].name")}")
+        
 
-        sleep(60)  # Update every 60 second
+        # check upgrades
+        numUpgrades = driver.execute_script("return Game.UpgradesInStore.length")
+        for i in range(numUpgrades):
+            if (driver.execute_script("return Game.UpgradesInStore[" + str(i) + "].pool") == "cookie"):
+                # probably a % boost
+                percent = driver.execute_script("return Game.UpgradesInStore[" + str(i) + "].desc").split()[3][4]
+                price = driver.execute_script("return Game.UpgradesInStore[" + str(i) + "].getPrice()")
+                cps = cpsRaw * (int(percent) / 100)
+                efficiency = cps / price
+                if (efficiency > maxEfficiency):
+                    maxEfficiency = efficiency
+                    indexOf = i
+                    maxCps = cps
+                    isUpgrade = 1
+            if (driver.execute_script("return Game.UpgradesInStore[" + str(i) + "].pool") == ""):
+                buildingNum = driver.execute_script("return Game.UpgradesInStore[" + str(i) + "].buildingTie.id")
+                amtBuilding = driver.execute_script("return Game.ObjectsById[" + str(buildingNum) + "].amount")
+                buildingStoredTotalCps = driver.execute_script("return Game.ObjectsById[" + str(buildingNum) + "].storedTotalCps")
+                cps = (globalMul * buildingStoredTotalCps) / amtBuilding
+                price = driver.execute_script("return Game.UpgradesInStore[" + str(i) + "].getPrice()")
+                efficiency = cps / price
+                if (efficiency > maxEfficiency):
+                    maxEfficiency = efficiency
+                    indexOf = i
+                    maxCps = cps
+                    isUpgrade = 1
+                print(efficiency)
+        
+        print(f"Best efficiency overall: {maxEfficiency}")
+        if (isUpgrade):
+            print(f"Best thing: {driver.execute_script("return Game.UpgradesInStore[" + str(indexOf) + "].name")}")
+        else:
+            print(f"Best thing: {driver.execute_script("return Game.ObjectsById[" + str(indexOf) + "].name")}")
+        print(f"% cps added: {(maxCps / cpsRaw) * 100}%")
+        sleep(10)  # Update every 60 second
 
 
 except Exception as e:
