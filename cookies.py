@@ -4,17 +4,17 @@ from selenium.webdriver.common.by import By
 from time import sleep
 
 # Set up Chrome options to use your existing user profile
-options = webdriver.ChromeOptions()  # Use webdriver.ChromeOptions() instead of Options()
-options.add_argument(r"user-data-dir=C:\Users\localadmin\AppData\Local\Google\Chrome\User Data")  # Replace with your path
-#options.add_argument("--guest")
-options.add_argument(r"profile-directory=Profile 1")  # Or the specific profile name if it's not "Default"
+
+options = webdriver.ChromeOptions()
+options.add_argument(r"--user-data-dir=C:\Users\localadmin\AppData\Local\Google\Chrome\User Data")
+options.add_argument(r"--profile-directory=Profile 1")
 
 options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 
 
 # Set up the WebDriver (Make sure 'chromedriver' is in PATH)
-service = Service(r"C:\Users\localadmin\Downloads\chromedriver-win64\chromedriver-win64\chromedriver.exe")  # Update this path
-driver = webdriver.Chrome(service=service, options=options)  # Pass options here!
+service = Service(r"C:\Users\localadmin\Downloads\chromedriver-win64(1)\chromedriver-win64\chromedriver.exe")  # Update this path
+driver = webdriver.Chrome(service=service, options=options)
 # driver = webdriver.Chrome(service=service)  # Pass options here!
 
 try:
@@ -63,10 +63,16 @@ try:
 
         #buildings = driver.execute_script("return Game.ObjectsById")
         
-        maxEfficiency = 0
-        indexOf = 0
-        isUpgrade = 0
-        maxCps = 0
+        buildingEff1 = 0
+        buildingEff2 = 0
+        ioBuilding1 = 0
+        ioBuilding2 = 0
+
+        upgradeEff1 = 0
+        upgradeEff2 = 0
+        ioUpgrade1 = 0
+        ioUpgrade2 = 0
+
 
         # check buildings
         for i in range(20):
@@ -74,19 +80,37 @@ try:
             buildingName = driver.execute_script("return Game.ObjectsById[" + str(i) + "].name")
             amtBuilding = driver.execute_script("return Game.ObjectsById[" + str(i) + "].amount")
             price = driver.execute_script("return Game.ObjectsById[" + str(i) + "].price")
+            name = driver.execute_script("return Game.ObjectsById[" + str(i) + "].name")
             cpsEach = (globalMul * buildingStoredTotalCps) / amtBuilding
             efficiency = (cpsEach / price)
-            if (efficiency > maxEfficiency):
-                maxEfficiency = efficiency
-                indexOf = i
-                maxCps = cpsEach
+            
+            #print(name)
+            #print("Efficiency", efficiency)
+            #print("buildingEff1", buildingEff1)
+            #print("buildingEfff2", buildingEff2)
+
+            # check to beat both
+            if (efficiency >= buildingEff1):
+                # move 1 to 2
+                buildingEff2 = buildingEff1
+                ioBuilding2 = ioBuilding1
+
+                buildingEff1 = efficiency
+                ioBuilding1 = i
+            elif (efficiency >= buildingEff2):
+                buildingEff2 = efficiency
+                ioBuilding2 = i
+
+            #print("building 1",ioBuilding1)
+            #print("building 2", ioBuilding2)
+            
+            
+            
+
+
             #print(f"{buildingName} CPS each: {cpsEach}")
             #print(f"{buildingName} price: {price}")
             #print(f"{buildingName} efficiency: {efficiency}")
-
-        print(f"Best building efficiency: {maxEfficiency}")
-        print(f"Best building: {driver.execute_script("return Game.ObjectsById[" + str(indexOf) + "].name")}")
-        
 
         # check upgrades
         numUpgrades = driver.execute_script("return Game.UpgradesInStore.length")
@@ -97,11 +121,19 @@ try:
                 price = driver.execute_script("return Game.UpgradesInStore[" + str(i) + "].getPrice()")
                 cps = cpsRaw * (int(percent) / 100)
                 efficiency = cps / price
-                if (efficiency > maxEfficiency):
-                    maxEfficiency = efficiency
-                    indexOf = i
-                    maxCps = cps
-                    isUpgrade = 1
+                # check to beat both
+                if (efficiency > upgradeEff1):
+                    # move 1 to 2
+                    upgradeEff2 = upgradeEff1
+                    ioUpgrade2 = ioUpgrade1
+
+                    upgradeEff1 = efficiency
+                    ioUpgrade1 = i
+                elif (efficiency > upgradeEff2):
+                    upgradeEff2 = efficiency
+                    ioUpgrade2 = i
+
+
             if (driver.execute_script("return Game.UpgradesInStore[" + str(i) + "].pool") == ""):
                 buildingNum = driver.execute_script("return Game.UpgradesInStore[" + str(i) + "].buildingTie.id")
                 amtBuilding = driver.execute_script("return Game.ObjectsById[" + str(buildingNum) + "].amount")
@@ -109,19 +141,33 @@ try:
                 cps = (globalMul * buildingStoredTotalCps) / amtBuilding
                 price = driver.execute_script("return Game.UpgradesInStore[" + str(i) + "].getPrice()")
                 efficiency = cps / price
-                if (efficiency > maxEfficiency):
-                    maxEfficiency = efficiency
-                    indexOf = i
-                    maxCps = cps
-                    isUpgrade = 1
-                print(efficiency)
+                # check to beat both
+                if (efficiency > upgradeEff1):
+                    # move 1 to 2
+                    upgradeEff2 = upgradeEff1
+                    ioUpgrade2 = ioUpgrade1
+
+                    upgradeEff1 = efficiency
+                    ioUpgrade1 = i
+                elif (efficiency > upgradeEff2):
+                    upgradeEff2 = efficiency
+                    ioUpgrade2 = i
         
-        print(f"Best efficiency overall: {maxEfficiency}")
-        if (isUpgrade):
-            print(f"Best thing: {driver.execute_script("return Game.UpgradesInStore[" + str(indexOf) + "].name")}")
+        
+        print(f"Best Upgrade: {driver.execute_script("return Game.UpgradesInStore[" + str(ioUpgrade1) + "].name")}")
+        print(f"2nd Best Upgrade: {driver.execute_script("return Game.UpgradesInStore[" + str(ioUpgrade2) + "].name")}")
+
+        
+        print(f"Best Building: {driver.execute_script("return Game.ObjectsById[" + str(ioBuilding1) + "].name")}")
+        print(f"2nd Best Building: {driver.execute_script("return Game.ObjectsById[" + str(ioBuilding2) + "].name")}")
+        
+
+        if (buildingEff1 >= upgradeEff1):
+            print(f"Building better")
         else:
-            print(f"Best thing: {driver.execute_script("return Game.ObjectsById[" + str(indexOf) + "].name")}")
-        print(f"% cps added: {(maxCps / cpsRaw) * 100}%")
+            print(f"Upgrade better")
+
+
         sleep(10)  # Update every 60 second
 
 
